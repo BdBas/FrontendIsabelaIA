@@ -18,7 +18,7 @@ const quickActions = [
   { icon: <Phone size={16} />, text: "Contacto", action: "Números de contacto y horarios" }
 ];
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]); // Inicializar con array vacío para cargar del backend
@@ -33,7 +33,7 @@ const Chat = () => {
   useEffect(() => {
     const loadConversation = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/chat/conversation`, {
+        const response = await axios.get(`${API_URL}/chat/conversation`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         
@@ -125,7 +125,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/chat/message`,
+        `${API_URL}/chat/message`,
         { 
           message: userMessage.text,
           metadata: userMessage.metadata
