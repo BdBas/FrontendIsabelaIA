@@ -2,6 +2,63 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, MessageCircle, Phone, Mail, MapPin, Clock, User, BookOpen, CreditCard, Award, Calendar, FileText, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './components/Login';
+import Register from './components/Register';
+import Chat from './components/Chat';
+
+// Base de conocimiento para respuestas rápidas
+const knowledgeBase = {
+  sedes: {
+    pance: {
+      direccion: "Cra. 122 No. 12 – 459, Cali, Valle del Cauca",
+      extensiones: "2102 – 2104 – 2106 – 0100",
+      descripcion: "Campus Principal"
+    },
+    melendez: {
+      direccion: "Cra. 94 No. 4C – 04, Barrio Meléndez, Cali",
+      extensiones: "3112 – 3116 – 3118 – 4100",
+      telefono: "+57 (2) 312 0038",
+      servicios: "Facultad de Ciencias Administrativas, Cartera Universidad"
+    },
+    centro: {
+      direccion: "Cra. 5 No. 11-42, Centro, Cali",
+      extensiones: "3112 – 3114 – 3116 – 3118",
+      especialidad: "Programa de Derecho"
+    }
+  },
+  inscripciones: {
+    pin: "$94.000 COP",
+    cuenta: "Banco de Bogotá, Cuenta Corriente N° 249.038.035",
+    whatsapp: "318 4624342",
+    telefonos: "310 456 1890 / 321 807 6501",
+    portal: "https://inscripciones.unicatolica.edu.co/pregrado/"
+  },
+  fechas2025: {
+    inscripciones: "21 oct 2024 - 22 nov 2024",
+    matricula: "1 dic 2024",
+    inicioClases: "10 feb 2025",
+    finSemestre: "7 jun 2025"
+  },
+  becas: [
+    {
+      nombre: "Beca de Excelencia",
+      requisito: "Promedio ≥ 4.5",
+      beneficio: "30-50% de descuento"
+    },
+    {
+      nombre: "Becas Lumen Gentium",
+      requisito: "Estratos 1, 2 y 3",
+      beneficio: "Descuentos especiales"
+    },
+    {
+      nombre: "Beca de Reconocimiento a Grupos Representativos",
+      requisito: "Participación en grupos culturales/deportivos",
+      beneficio: "Porcentaje según convocatoria"
+    }
+  ]
+};
 
 const quickActions = [
   { icon: <BookOpen size={16} />, text: "Inscripciones", action: "¿Cómo me inscribo a un programa?" },
@@ -12,182 +69,35 @@ const quickActions = [
   { icon: <Phone size={16} />, text: "Contacto", action: "Números de contacto y horarios" }
 ];
 
-function App() {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'isabella',
-      text: '¡Hola! Soy Isabella, tu asistente virtual de la Fundación Universitaria Católica Lumen Gentium - Unicatólica. ¿En qué puedo ayudarte hoy?',
-      timestamp: new Date().toLocaleTimeString()
-    }
-  ]);
-  const [currentMessage, setCurrentMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
 
-  const handleSendMessage = async () => {
-    if (currentMessage.trim() === '') return;
+  return user ? children : <Navigate to="/login" />;
+};
 
-    const userMessage = {
-      id: messages.length + 1,
-      sender: 'user',
-      text: currentMessage,
-      timestamp: new Date().toLocaleTimeString()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setCurrentMessage('');
-    setIsTyping(true);
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await axios.post('http://localhost:3001/api/chat', { prompt: currentMessage });
-      if (response.data && response.data.content) {
-        const isabellaMessage = {
-          id: messages.length + 2,
-          sender: 'isabella',
-          text: response.data.content,
-          timestamp: new Date().toLocaleTimeString()
-        };
-        setMessages(prev => [...prev, isabellaMessage]);
-      }
-    } catch (error) {
-      setError(error.response?.data?.error || 'Error al procesar el mensaje. Por favor, intenta de nuevo.');
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSendMessage();
-  };
-
-  const handleQuickAction = (action) => {
-    setCurrentMessage(action);
-    setTimeout(() => handleSendMessage(), 100);
-  };
-
+const App = () => {
   return (
-    <div className="app-bg">
-      {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <div className="header-avatar">
-            <User size={32} />
-          </div>
-          <div>
-            <h1 className="header-title">Isabella</h1>
-            <div className="header-subtitle">Asistente Virtual - Unicatólica</div>
-            <div className="header-desc">Fundación Universitaria Católica Lumen Gentium</div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="main-container">
-        {/* Chat Area */}
-        <div className="chat-area">
-          <div className="chat-messages">
-            {error && (
-              <div className="chat-error">{error}</div>
-            )}
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`chat-message ${message.sender === 'user' ? 'chat-message-user' : 'chat-message-bot'}`}
-              >
-                <div className="chat-message-content">
-                  <p>{message.text}</p>
-                  <span className="chat-message-time">{message.timestamp}</span>
-                </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div className="chat-message chat-message-bot">
-                <div className="chat-message-content">
-                  <div className="typing-indicator">
-                    <span></span><span></span><span></span>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-          {/* Input */}
-          <div className="chat-input-row">
-            <input
-              type="text"
-              value={currentMessage}
-              onChange={(e) => setCurrentMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Escribe tu consulta sobre Unicatólica..."
-              className="chat-input"
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={isLoading}
-              className="chat-send-btn"
-            >
-              <Send size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <aside className="sidebar">
-          {/* Quick Actions */}
-          <div className="sidebar-card">
-            <div className="sidebar-card-title">
-              <MessageCircle size={18} className="sidebar-icon" />
-              Consultas Rápidas
-            </div>
-            <div className="quick-actions">
-              {quickActions.map((action, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleQuickAction(action.action)}
-                  className="quick-action-btn"
-                >
-                  {action.icon}
-                  <span>{action.text}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div className="sidebar-card">
-            <div className="sidebar-card-title">Contacto Directo</div>
-            <div className="sidebar-contact">
-              <div><Phone size={16} className="sidebar-icon" /> +57 (2) 312 0038</div>
-              <div><Mail size={16} className="sidebar-icon" /> info@unicatolica.edu.co</div>
-              <div><MapPin size={16} className="sidebar-icon" /> Cra. 122 No. 12-459, Cali</div>
-              <div><Clock size={16} className="sidebar-icon" /> Lun-Vie: 8:00-17:30</div>
-            </div>
-          </div>
-
-          {/* Useful Links */}
-          <div className="sidebar-card">
-            <div className="sidebar-card-title">Enlaces Útiles</div>
-            <div className="sidebar-links">
-              <a href="#"><ExternalLink size={14} className="sidebar-icon" /> Portal Estudiantil</a>
-              <a href="#"><ExternalLink size={14} className="sidebar-icon" /> Campus Virtual</a>
-              <a href="#"><ExternalLink size={14} className="sidebar-icon" /> Inscripciones</a>
-              <a href="#"><ExternalLink size={14} className="sidebar-icon" /> Biblioteca Digital</a>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Chat />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

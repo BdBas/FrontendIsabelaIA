@@ -40,12 +40,12 @@ const ChatPrompt = () => {
       setConversations(newConversations)
       setPrompt('') // Limpiar el input inmediatamente para mejor UX
       
-      const res = await axios.post('https://back-parcial.vercel.app/api/chat', { prompt })
+      const res = await axios.post('http://localhost:3000/api/generate-questions', { category: prompt })
       
       // Agregar la respuesta de la IA a las conversaciones
       setConversations([
         ...newConversations,
-        { role: 'assistant', content: res.data.response }
+        { role: 'assistant', content: res.data }
       ])
     } catch (error) {
       console.error('Error al obtener respuesta:', error)

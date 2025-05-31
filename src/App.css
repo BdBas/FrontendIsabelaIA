@@ -111,6 +111,11 @@
   margin-bottom: 10px;
   font-size: 0.97rem;
 }
+.chat-message-content p {
+  white-space: pre-line;
+  margin: 0;
+  line-height: 1.5;
+}
 
 /* Typing indicator */
 .typing-indicator span {
