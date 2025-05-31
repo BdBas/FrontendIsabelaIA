@@ -2,10 +2,23 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./src/components/**/*.{js,jsx,ts,tsx}",
+    "./src/pages/**/*.{js,jsx,ts,tsx}",
+    "./src/contexts/**/*.{js,jsx,ts,tsx}",
+    "./src/styles/**/*.css"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: '#1a365d',
+        secondary: '#2d3748',
+        accent: '#4299e1'
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif']
+      }
+    },
   },
   plugins: [],
 }
