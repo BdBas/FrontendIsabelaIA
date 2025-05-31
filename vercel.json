@@ -1,14 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist",
   "routes": [
     {
       "src": "/static/(.*)",
@@ -36,6 +29,6 @@
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://api-isabella.vercel.app"
+    "VITE_API_URL": "https://api-isabella.vercel.app"
   }
 } 
